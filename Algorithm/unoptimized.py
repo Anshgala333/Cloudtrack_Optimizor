@@ -83,4 +83,5 @@ def pack_trucks_from_csv(csv_file_path, truck_choice_idx=[0, 1, 2], total_trucks
 
 
 
-pack_trucks_from_csv(csv_file_path= "../uploads/1750513113.5196495_main.csv")
+# pack_trucks_from_csv(csv_file_path= "../uploads/1750513113.5196495_main.csv")
+pack_trucks_from_csv(csv_file_path= "../uploads/test2.csv")
