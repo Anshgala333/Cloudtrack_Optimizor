@@ -1,0 +1,10 @@
+Group,Product Name (UID),Type,Length/Diameter,Width,Height,Weight,Quantity,Pallet max weight,Pallet depth
+Group #1,,,,,,,,,
+,Boxes 1,box,400,400,300,10,18,,
+,box 3,box,600,400,600,25,20,,
+Group #2,,,,,,,,,
+,Box 2,box,400,400,400,15,30,,
+,Box 2,box,400,400,400,15,18,,
+,Box 3,box,600,400,600,25,23,,
+Group #3,,,,,,,,,
+,Box 3,box,600,400,600,29,25,,

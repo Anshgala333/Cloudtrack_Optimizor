@@ -2,6 +2,7 @@ import pandas as pd
 from collections import defaultdict
 import random
 import numpy as np
+import time
 
 # Box and Truck Definitions
 # dimension in meter
@@ -19,7 +20,7 @@ TRUCKS = [
         "width": 2.0,
         "height": 2.0,
         "max_weight": 3000,
-        "count": 1,
+        "count": 0,
     },
     {
         "name": "24-ft Truck",
@@ -27,7 +28,7 @@ TRUCKS = [
         "width": 2.44,
         "height": 2.6,
         "max_weight": 8000,
-        "count": 0,
+        "count": 1,
     },
     {
         "name": "32-ft Truck",
@@ -42,9 +43,9 @@ TRUCKS = [
 min_width = min(BOX_TYPES[b]["width"] for b in BOX_TYPES)
 min_length = min(BOX_TYPES[b]["length"] for b in BOX_TYPES)
 
-STEP_X = round(min_width / 8, 4)  # 0.05
-STEP_Y = round(min_length / 5, 4)  # 0.09 or 0.1
-STEP_Z = 0.05
+STEP_X = min_width   # 0.05
+STEP_Y = round(min_length /2, 4)  # 0.09 or 0.1
+STEP_Z = 0.1
 
 
 def read_boxes_from_csv(path):
@@ -121,32 +122,42 @@ def is_supported_priority_aware(pos, size, placed_boxes, current_priority):
                 if box["priority"] < current_priority:
                     return False
                 support_area += x_overlap * y_overlap
-    return support_area >= 0.95 * box_area
+    return support_area >= 0.9 * box_area
 
 
 def greedy_fill(boxes, truck):
+    if not boxes:
+        return []
+
+    l = np.array([b["length"] for b in boxes])
+    w = np.array([b["width"] for b in boxes])
+    h = np.array([b["height"] for b in boxes])
+    vol = l * w * h
+    wt = np.array([b["weight"] for b in boxes])
+
+    total_vol = 0.0
+    total_wt = 0.0
     filled = []
-    total_weight = 0
-    total_volume = 0
-    for box in boxes:
-        volume = box["length"] * box["width"] * box["height"]
-        if (
-            total_weight + box["weight"] <= truck["max_weight"]
-            and total_volume + volume <= truck["volume"]
-        ):
-            filled.append(box)
-            total_weight += box["weight"]
-            total_volume += volume
+
+    for i in range(len(boxes)):
+        if total_wt + wt[i] <= truck["max_weight"] and total_vol + vol[i] <= truck["volume"]:
+            filled.append(boxes[i])
+            total_wt += wt[i]
+            total_vol += vol[i]
+
     return filled
+
 
 
 def smart_place_boxes(truck, boxes):
     placed = []
     unplaced = []
 
-    print(len(boxes))
-    boxes.sort(key=lambda b: (-b["priority"], b["length"] * b["width"] * b["height"]))
-    print(len(boxes))
+    # boxes.sort(key=lambda b: (b["priority"], b["length"] * b["width"] * b["height"]))
+    priorities = np.array([b["priority"] for b in boxes])
+    volumes = np.array([b["length"] * b["width"] * b["height"] for b in boxes])
+    sorted_indices = np.lexsort((volumes, priorities))
+    boxes = [boxes[i] for i in sorted_indices]
 
     max_x = truck["width"]
     max_y = truck["length"]
@@ -160,8 +171,8 @@ def smart_place_boxes(truck, boxes):
         }
         placed_flag = False
 
-        y = 0
-        while y + box["length"] <= max_y and not placed_flag:
+        y = max_y-box["length"] +0.5
+        while y >= box["length"] and not placed_flag:
             x = 0.0
             while x + box["width"] <= max_x and not placed_flag:
                 z = 0.0
@@ -178,7 +189,7 @@ def smart_place_boxes(truck, boxes):
                         break
                     z += STEP_Z
                 x += STEP_X
-            y += STEP_Y
+            y -= STEP_Y
 
         if not placed_flag:
             unplaced.append(box)
@@ -240,6 +251,15 @@ def generate_final_output(truck_fleet, unplaced_boxes):
     message["total_trucks_used"] = len(message["trucks"])
     return {"message": message}
 
+def compute_stats_numpy(boxes):
+    if not boxes:
+        return 0.0, 0.0
+    lengths = np.array([b["length"] for b in boxes])
+    widths = np.array([b["width"] for b in boxes])
+    heights = np.array([b["height"] for b in boxes])
+    weights = np.array([b["weight"] for b in boxes])
+    volumes = lengths * widths * heights
+    return np.sum(volumes), np.sum(weights)
 
 def main(csv_path):
     boxes = read_boxes_from_csv(csv_path)
@@ -252,22 +272,21 @@ def main(csv_path):
     for truck in truck_fleet:
         guess_fit = greedy_fill(all_unplaced, truck)
         placed, _ = smart_place_boxes(truck, guess_fit)
-        
+
         if placed:
             min_y = min(box["position"]["y"] for box in placed)
             if min_y > 0:
                 for box in placed:
                     box["position"]["y"] -= min_y
         truck["boxes"] = placed
-        truck["weight"] = sum(b["weight"] for b in placed)
-        truck["used_volume"] = sum(
-            b["length"] * b["width"] * b["height"] for b in placed
-        )
+        truck["used_volume"], truck["weight"] = compute_stats_numpy(placed)
         all_unplaced = [b for b in all_unplaced if b not in placed]
 
     return generate_final_output(truck_fleet, all_unplaced)
 
 
 # To run:
+start = time.time()
 # result = main("../../uploads/differentShape.csv")
+print(time.time() - start)
 # import json; print(json.dumps(result, indent=2))

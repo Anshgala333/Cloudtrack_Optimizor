@@ -43,16 +43,9 @@ def getDataForThisCSV(filename:str):
 
 @upload.get("/getDataForThisCSV/boxOfDifferentSize/{filename}")
 def getDataForThisCSV1(filename:str):
-    print(filename)
-    customers = {
-        "Customer1": {"priority": 1, "orders": {"b1": 3, "b2": 3, "b3": 4}},
-        "Customer2": {"priority": 2, "orders": {"b1": 2, "b3": 2}},
-        "Customer3": {"priority": 3, "orders": {"b2": 5}},
-    }
-    # return differentSize1(customers)
+    
     path = os.path.join(UPLOAD_DIR, filename)
     response = differentSize(path)
-    print(response)
     return response
 
     
