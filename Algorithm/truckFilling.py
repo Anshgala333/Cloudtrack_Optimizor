@@ -2,6 +2,7 @@ import pandas as pd
 import json
 from collections import defaultdict
 import time
+import math
 
 # Constants
 BOX_LENGTH = 0.46
@@ -11,11 +12,20 @@ BOX_VOLUME = BOX_LENGTH * BOX_WIDTH * BOX_HEIGHT
 
 # Truck definitions with count
 TRUCKS = [
-    {"name": "12-ft Truck", "length": 3.66, "width": 2.0, "height": 2.0, "max_weight": 3000, "count": 1},
-    {"name": "24-ft Truck", "length": 7.32, "width": 2.44, "height": 2.6, "max_weight": 8000, "count": 0},
-    {"name": "32-ft Truck", "length": 9.75, "width": 2.44, "height": 2.6, "max_weight": 10000, "count": 0}
+    {"name": "12-ft Truck", "length": 3.66, "width": 2.0, "height": 2.0, "max_weight": 3000, "count": 20},
+    {"name": "24-ft Truck", "length": 7.32, "width": 2.44, "height": 2.6, "max_weight": 8000, "count": 20},
+    {"name": "32-ft Truck", "length": 9.75, "width": 2.44, "height": 2.6, "max_weight": 10000, "count": 20}
 ]
-
+def calculate_max_capacity(length, width, height):
+    return (
+        math.floor(length / BOX_LENGTH) *
+        math.floor(width / BOX_WIDTH) *
+        math.floor(height / BOX_HEIGHT)
+    )
+for truck in TRUCKS:
+    truck["maximum_capacity"] = calculate_max_capacity(
+        truck["length"], truck["width"], truck["height"]
+    )
 def beautify_truck_data(truck_fleet):
     beautified = {
         "total_trucks_used": 0,
@@ -113,7 +123,8 @@ def pack_trucks_from_csv(csv_file_path):
                 'volume': truck_volume,
                 'max_weight': truck_def['max_weight'],
                 'boxes': [],
-                'weight': 0.0
+                'weight': 0.0,
+                "maximum_capacity" : truck_def["maximum_capacity"] 
             })
 
     truck_fleet.sort(key=lambda x: (x['max_weight'], x['volume']), reverse=True)
@@ -123,6 +134,8 @@ def pack_trucks_from_csv(csv_file_path):
     for box in boxes:
         placed = False
         for truck in truck_fleet:
+            maxCapacity = truck["maximum_capacity"]
+            if(len(truck["boxes"]) == maxCapacity):continue
             used_volume = len(truck['boxes']) * BOX_VOLUME
             if (used_volume + BOX_VOLUME <= truck['volume']) and (truck['weight'] + box['weight'] <= truck['max_weight']):
                 truck['boxes'].append(box)

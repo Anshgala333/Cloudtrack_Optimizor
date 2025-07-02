@@ -1,0 +1,277 @@
+import pandas as pd
+from collections import defaultdict
+import random
+
+# Box and Truck Definitions
+BOX_TYPES = {
+    "b1": {"length": 0.46, "width": 0.46, "height": 0.41},
+    "b2": {"length": 0.6, "width": 0.4, "height": 0.5},
+    "b3": {"length": 0.8, "width": 0.6, "height": 0.8},
+}
+
+TRUCKS = [
+    {
+        "name": "12-ft Truck",
+        "length": 3.66,
+        "width": 2.0,
+        "height": 2.0,
+        "max_weight": 3000,
+        "count": 1,
+    },
+    {
+        "name": "24-ft Truck",
+        "length": 7.32,
+        "width": 2.44,
+        "height": 2.6,
+        "max_weight": 8000,
+        "count": 1,
+    },
+    {
+        "name": "32-ft Truck",
+        "length": 9.75,
+        "width": 2.44,
+        "height": 2.6,
+        "max_weight": 10000,
+        "count": 0,
+    },
+]
+
+STEP_X = 15  # cm
+STEP_Y = 15
+STEP_Z = 3
+
+
+def read_boxes_from_csv(path):
+    df = pd.read_csv(path)
+    df[["length", "width", "height"]] = df["box_type"].apply(
+        lambda bt: pd.Series(BOX_TYPES[bt])
+    )
+    df["box_number"] = df.groupby("customer_name").cumcount() + 1
+    return df.to_dict("records")
+
+
+def create_truck_fleet():
+    fleet = []
+    for truck_def in TRUCKS:
+        for _ in range(truck_def["count"]):
+            fleet.append(
+                {
+                    "name": truck_def["name"],
+                    "length": truck_def["length"],
+                    "width": truck_def["width"],
+                    "height": truck_def["height"],
+                    "volume": truck_def["length"]
+                    * truck_def["width"]
+                    * truck_def["height"],
+                    "max_weight": truck_def["max_weight"],
+                    "boxes": [],
+                    "weight": 0.0,
+                    "used_volume": 0.0,
+                }
+            )
+    return fleet
+
+
+def can_place(new_box, pos, placed_boxes, epsilon=1e-5):
+    nx, ny, nz = pos["x"], pos["y"], pos["z"]
+    nw, nl, nh = new_box["width"], new_box["length"], new_box["height"]
+
+    for box in placed_boxes:
+        bx, by, bz = box["position"]["x"], box["position"]["y"], box["position"]["z"]
+        bw, bl, bh = box["width"], box["length"], box["height"]
+
+        if not (
+            nx + nw <= bx + epsilon
+            or bx + bw <= nx + epsilon
+            or ny + nl <= by + epsilon
+            or by + bl <= ny + epsilon
+            or nz + nh <= bz + epsilon
+            or bz + bh <= nz + epsilon
+        ):
+            return False
+    return True
+
+
+def is_supported_priority_aware(pos, size, placed_boxes, current_priority):
+    if pos["z"] == 0:
+        return True
+    support_area = 0
+    box_area = size["width"] * size["length"]
+
+    for box in placed_boxes:
+        below = box["position"]
+        if abs((below["z"] + box["height"]) - pos["z"]) < 0.1:
+            x_overlap = max(
+                0,
+                min(pos["x"] + size["width"], below["x"] + box["width"])
+                - max(pos["x"], below["x"]),
+            )
+            y_overlap = max(
+                0,
+                min(pos["y"] + size["length"], below["y"] + box["length"])
+                - max(pos["y"], below["y"]),
+            )
+            if x_overlap > 0 and y_overlap > 0:
+                if box["priority"] < current_priority:
+                    return False
+                support_area += x_overlap * y_overlap
+    return support_area >= 0.9 * box_area
+
+
+def greedy_fill(boxes, truck):
+    filled = []
+    total_weight = 0
+    total_volume = 0
+    for box in boxes:
+        volume = box["length"] * box["width"] * box["height"]
+        if (
+            total_weight + box["weight"] <= truck["max_weight"]
+            and total_volume + volume <= truck["volume"]
+        ):
+            filled.append(box)
+            total_weight += box["weight"]
+            total_volume += volume
+    return filled
+
+
+def smart_place_boxes(truck, boxes):
+    placed = []
+    unplaced = []
+
+    print(len(boxes))
+
+    boxes.sort(key=lambda b: (b["priority"], b["length"] * b["width"] * b["height"]))
+
+    print(len(boxes))
+
+    for box in boxes:  # start from highest priority
+        placed_flag = False
+        box_dims = {
+            "length": box["length"],
+            "width": box["width"],
+            "height": box["height"],
+        }
+        y_count = 0
+        y_range = range(int((truck["length"] - box["length"]) * 100) + 1, 0, -STEP_Y)
+
+        for y in y_range:
+            y_count += 1
+            x_range = (
+                range(0, int((truck["width"] - box["width"]) * 100) + 1, STEP_X)
+                if y_count % 2 == 0
+                else reversed(
+                    range(0, int((truck["width"] - box["width"]) * 100) + 1, STEP_X)
+                )
+            )
+            for z in range(0, int((truck["height"] - box["height"]) * 100) + 1, STEP_Z):
+                for x in x_range:
+                    pos = {"x": x / 100, "y": y / 100, "z": z / 100}
+                    if (
+                        pos["x"] + box["width"] <= truck["width"]
+                        and pos["y"] + box["length"] <= truck["length"]
+                        and pos["z"] + box["height"] <= truck["height"]
+                    ):
+                        if can_place(
+                            box, pos, placed, epsilon=1e-6
+                        ) and is_supported_priority_aware(
+                            pos, box_dims, placed, box["priority"]
+                        ):
+                            box["position"] = pos
+                            placed.append(box)
+                            placed_flag = True
+                            break
+                if placed_flag:
+                    break
+            if placed_flag:
+                break
+
+        if not placed_flag:
+            unplaced.append(box)
+
+    return placed, unplaced
+
+
+def generate_final_output(truck_fleet, unplaced_boxes):
+    message = {"total_trucks_used": 0, "trucks": [], "not_placed": defaultdict(list)}
+    for i, truck in enumerate(truck_fleet, start=1):
+        if not truck["boxes"]:
+            continue
+        vol_percent = round((truck["used_volume"] / truck["volume"]) * 100, 2)
+        wt_percent = round((truck["weight"] / truck["max_weight"]) * 100, 2)
+        truck_data = {
+            "truck_number": i,
+            "name": truck["name"],
+            "max_weight": truck["max_weight"],
+            "used_weight": round(truck["weight"], 2),
+            "occupied_volume": f"{vol_percent}%",
+            "occupied_weight": f"{wt_percent}%",
+            "volume": f"{round(truck['volume'], 2)} cubic meter",
+            "total_boxes": len(truck["boxes"]),
+            "boxes": [],
+        }
+        for box in truck["boxes"]:
+            truck_data["boxes"].append(
+                {
+                    "custom_id": f"{box['customer_name']}#{box['box_number']}",
+                    "customer_name": box["customer_name"],
+                    "box_number": box["box_number"],
+                    "priority": box["priority"],
+                    "weight": box["weight"],
+                    "box_type": box["box_type"],
+                    "dimensions": {
+                        "length": box["length"],
+                        "width": box["width"],
+                        "height": box["height"],
+                    },
+                    "position": box["position"],
+                }
+            )
+        message["trucks"].append(truck_data)
+    for box in unplaced_boxes:
+        message["not_placed"][box["customer_name"]].append(
+            {
+                "box_number": box["box_number"],
+                "weight": box["weight"],
+                "priority": box["priority"],
+                "box_type": box["box_type"],
+                "dimensions": {
+                    "length": box["length"],
+                    "width": box["width"],
+                    "height": box["height"],
+                },
+            }
+        )
+    message["not_placed"] = dict(message["not_placed"])
+    message["total_trucks_used"] = len(message["trucks"])
+    return {"message": message}
+
+
+def main(csv_path):
+    boxes = read_boxes_from_csv(csv_path)
+    truck_fleet = create_truck_fleet()
+    all_unplaced = sorted(
+        boxes,
+        key=lambda b: (b["priority"], -1 * b["length"] * b["width"] * b["height"]),
+    )
+
+    for truck in truck_fleet:
+        guess_fit = greedy_fill(all_unplaced, truck)
+        placed, _ = smart_place_boxes(truck, guess_fit)
+        if placed:
+            min_y = min(box["position"]["y"] for box in placed)
+            if min_y > 0:
+                for box in placed:
+                    box["position"]["y"] -= min_y
+        truck["boxes"] = placed
+        truck["weight"] = sum(b["weight"] for b in placed)
+        truck["used_volume"] = sum(
+            b["length"] * b["width"] * b["height"] for b in placed
+        )
+        all_unplaced = [b for b in all_unplaced if b not in placed]
+
+    return generate_final_output(truck_fleet, all_unplaced)
+
+
+# To run:
+# result = main("../../uploads/differentShape.csv")
+# import json; print(json.dumps(result, indent=2))
