@@ -10,6 +10,13 @@ const BOX_LENGTH = 0.46;
 const BOX_WIDTH = 0.46;
 const BOX_HEIGHT = 0.41;
 
+var different = {
+   "b1": {"length": 0.4, "width": 0.4, "height": 0.3},
+  "b2": { "length": 0.4, "width": 0.4, "height": 0.4 },
+  "b3": { "length": 0.6, "width": 0.4, "height": 0.6 },
+  "b4": { "length": 0.8, "width": 0.8, "height": 0.8 },
+}
+
 // Priority-color map
 const PRIORITY_COLORS = {
   1: "#FFA500", // Orange
@@ -37,7 +44,23 @@ function DetailedWheel({ position }) {
   );
 }
 
-export default function TruckView({ truck }) {
+export default function TruckView({ truck, showWeights }) {
+
+  const rowWiseWeightMap = useMemo(() => {
+    const map = new Map();
+
+    truck.boxes.forEach(box => {
+      const xKey = box.position.x.toFixed(2); // Avoid float precision bugs
+      const prev = map.get(xKey) || 0;
+      map.set(xKey, prev + box.weight);
+    });
+
+    return [...map.entries()].map(([x, weight]) => ({
+      x: parseFloat(x),
+      weight
+    }));
+  }, [truck.boxes]);
+
   const truckData = [
     { name: "12-ft Truck", length: 3.66, width: 2.0, height: 2.0, max_weight: 3000 },
     { name: "24-ft Truck", length: 7.32, width: 2.44, height: 2.6, max_weight: 8000 },
@@ -75,19 +98,39 @@ export default function TruckView({ truck }) {
           </React.Fragment>
         ))}
 
+        {showWeights &&
+          rowWiseWeightMap.map(({ x, weight }, idx) => (
+            <Html
+              key={idx}
+              position={[x + BOX_WIDTH / 2, TRUCK_HEIGHT + 0.2, TRUCK_LENGTH / 2]}
+              center
+              distanceFactor={5}
+              occlude
+              className="tooltip-box "
+            >
+              <div><strong>Total:</strong> {weight.toFixed(1)} kg</div>
+            </Html>
+          ))}
+
         {/* Boxes */}
         {truck.boxes.map((box, idx) => (
 
           <group
             key={box.custom_id}
+            // position={[
+            //   box.position.x + BOX_WIDTH / 2,
+            //   box.position.z + BOX_HEIGHT / 2,
+            //   box.position.y + BOX_LENGTH / 2,
+            // ]}
             position={[
-              box.position.x + BOX_WIDTH / 2,
-              box.position.z + BOX_HEIGHT / 2,
-              box.position.y + BOX_LENGTH / 2,
+              box.position.x + different[box["box_type"]].width / 2,
+              box.position.z + different[box["box_type"]].height / 2,
+              box.position.y + different[box["box_type"]]["length"] / 2,
             ]}
           >
             <mesh>
-              <boxGeometry args={[BOX_WIDTH, BOX_HEIGHT, BOX_LENGTH]} />
+              {/* <boxGeometry args={[BOX_WIDTH, BOX_HEIGHT, BOX_LENGTH]} /> */}
+              <boxGeometry args={[different[box["box_type"]].width, different[box["box_type"]].height, different[box["box_type"]]["length"]]} />
               <meshStandardMaterial
                 color={PRIORITY_COLORS[box.priority] || "#999"}
                 roughness={0.4}
