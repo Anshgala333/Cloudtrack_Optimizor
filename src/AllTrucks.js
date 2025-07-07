@@ -8,7 +8,7 @@ import Unplaced from './Components/Unplaced';
 
 
 export default function AllTrucks() {
-    const fileName = "test5.csv";
+    const fileName = "group.csv";
     const fileName1 = "differentShape.csv";
 
     const [truck, setTruck] = useState([]);
@@ -24,8 +24,8 @@ export default function AllTrucks() {
     useEffect(() => {
         async function getData() {
             try {
-                // const response = await fetch(`${process.env.REACT_APP_API}/upload/getDataForThisCSV/boxOfSameSize/${fileName}`);
-                const response = await fetch(`${process.env.REACT_APP_API}/upload/getDataForThisCSV/boxOfDifferentSize/${fileName1}`);
+                const response = await fetch(`${process.env.REACT_APP_API}/upload/getDataForThisCSV/boxOfSameSize/${fileName}`);
+                // const response = await fetch(`${process.env.REACT_APP_API}/upload/getDataForThisCSV/boxOfDifferentSize/${fileName1}`);
                 const data = await response.json();
                 setTruck(data.message.trucks);
                 setUnplacedOrders(data.message.not_placed);

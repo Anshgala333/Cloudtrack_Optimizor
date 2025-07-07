@@ -1,7 +1,7 @@
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Stats, Edges } from "@react-three/drei";
 import * as THREE from "three";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Html } from "@react-three/drei"; // For floating legend panel
 
 
@@ -11,7 +11,7 @@ const BOX_WIDTH = 0.46;
 const BOX_HEIGHT = 0.41;
 
 var different = {
-   "b1": {"length": 0.4, "width": 0.4, "height": 0.3},
+  "b1": { "length": 0.4, "width": 0.4, "height": 0.3 },
   "b2": { "length": 0.4, "width": 0.4, "height": 0.4 },
   "b3": { "length": 0.6, "width": 0.4, "height": 0.6 },
   "b4": { "length": 0.8, "width": 0.8, "height": 0.8 },
@@ -45,6 +45,9 @@ function DetailedWheel({ position }) {
 }
 
 export default function TruckView({ truck, showWeights }) {
+
+  const [ignorePriorites, setIgnorePrioriteis] = useState(new Set([]))
+
 
   const rowWiseWeightMap = useMemo(() => {
     const map = new Map();
@@ -113,33 +116,36 @@ export default function TruckView({ truck, showWeights }) {
           ))}
 
         {/* Boxes */}
-        {truck.boxes.map((box, idx) => (
+        {truck.boxes.map((box, idx) => {
+          if(ignorePriorites.has(box.priority))return null
 
-          <group
-            key={box.custom_id}
-            // position={[
-            //   box.position.x + BOX_WIDTH / 2,
-            //   box.position.z + BOX_HEIGHT / 2,
-            //   box.position.y + BOX_LENGTH / 2,
-            // ]}
-            position={[
-              box.position.x + different[box["box_type"]].width / 2,
-              box.position.z + different[box["box_type"]].height / 2,
-              box.position.y + different[box["box_type"]]["length"] / 2,
-            ]}
-          >
-            <mesh>
-              {/* <boxGeometry args={[BOX_WIDTH, BOX_HEIGHT, BOX_LENGTH]} /> */}
-              <boxGeometry args={[different[box["box_type"]].width, different[box["box_type"]].height, different[box["box_type"]]["length"]]} />
-              <meshStandardMaterial
-                color={PRIORITY_COLORS[box.priority] || "#999"}
-                roughness={0.4}
-                metalness={0.1}
-              />
-              <Edges scale={1.03} color="#111" />
-            </mesh>
-          </group>
-        ))}
+          return (
+            <group
+              key={box.custom_id}
+              position={[
+                box.position.x + BOX_WIDTH / 2,
+                box.position.z + BOX_HEIGHT / 2,
+                box.position.y + BOX_LENGTH / 2,
+              ]}
+              // position={[
+              //   box.position.x + different[box["box_type"]].width / 2,
+              //   box.position.z + different[box["box_type"]].height / 2,
+              //   box.position.y + different[box["box_type"]]["length"] / 2,
+              // ]}
+            >
+              <mesh>
+                <boxGeometry args={[BOX_WIDTH, BOX_HEIGHT, BOX_LENGTH]} />
+                {/* <boxGeometry args={[different[box["box_type"]].width, different[box["box_type"]].height, different[box["box_type"]]["length"]]} /> */}
+                <meshStandardMaterial
+                  color={PRIORITY_COLORS[box.priority] || "#999"}
+                  roughness={0.4}
+                  metalness={0.1}
+                />
+                <Edges scale={1.03} color="#111" />
+              </mesh>
+            </group>
+          )
+        })}
 
         {/* Front Cab */}
         <group position={[TRUCK_WIDTH / 2, TRUCK_HEIGHT / 4, -0.5]}>
