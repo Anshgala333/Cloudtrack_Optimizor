@@ -2,7 +2,7 @@ from fastapi import APIRouter,UploadFile,File
 from datetime import datetime
 from Algorithm.truckFilling import pack_trucks_from_csv
 from Algorithm.DifferentSize.differentsize import main as differentSize
-from Algorithm.DifferentSize.differentSize1 import pack_boxes_and_generate_output  as differentSize1
+# from Algorithm.DifferentSize.differentSize1 import pack_boxes_and_generate_output  as differentSize1
 import time
 import os
 

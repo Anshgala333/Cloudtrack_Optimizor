@@ -8,7 +8,6 @@ import math
 BOX_LENGTH = 0.46
 BOX_WIDTH = 0.46
 BOX_HEIGHT = 0.41
-BOX_WEIGHT = 12
 BOX_VOLUME = BOX_LENGTH * BOX_WIDTH * BOX_HEIGHT
 
 # Truck definitions with count
@@ -19,7 +18,7 @@ TRUCKS = [
         "width": 2.0,
         "height": 2.0,
         "max_weight": 3000,
-        "count": 7,
+        "count": 2,
     },
     {
         "name": "24-ft Truck",
@@ -27,7 +26,7 @@ TRUCKS = [
         "width": 2.44,
         "height": 2.6,
         "max_weight": 8000,
-        "count": 4,
+        "count": 0,
     },
     {
         "name": "32-ft Truck",
@@ -35,7 +34,7 @@ TRUCKS = [
         "width": 2.44,
         "height": 2.6,
         "max_weight": 10000,
-        "count": 4,
+        "count": 0,
     },
 ]
 
@@ -139,24 +138,10 @@ def group_unplaced_by_customer(unplaced):
 
 def pack_trucks_from_csv(csv_file_path):
     df = pd.read_csv(csv_file_path)
-    expanded_rows = []
-    for _, row in df.iterrows():
-        for _ in range(row["total_orders"]):
-            expanded_rows.append({
-                "customer_name": row["customer_name"],
-                "priority": row["priority"],
-                "weight": BOX_WEIGHT  # Or your chosen default
-            })
-
-    expanded_df = pd.DataFrame(expanded_rows)
-
-    # Step 3: Add box_number per customer
-    expanded_df["box_number"] = expanded_df.groupby("customer_name").cumcount() + 1
-
-    # Step 4: Sort by priority
-    expanded_df = expanded_df.sort_values(by="priority", ascending=True)
-
-    boxes = expanded_df.to_dict("records")
+    
+    df["box_number"] = df.groupby("customer_name").cumcount() + 1
+    df = df.sort_values(by="priority", ascending=True)
+    boxes = df.to_dict("records")
 
     truck_fleet = []
     for truck_idx, truck_def in enumerate(TRUCKS):
@@ -202,7 +187,6 @@ def pack_trucks_from_csv(csv_file_path):
     for i in range(len(truck_fleet)):
         t = truck_fleet[i]
         boxes = t.get("boxes")
-        if(len(boxes) == 0):continue
         high_priotiy = max(box["priority"] for box in boxes)
         count = sum(1 for box in boxes if box["priority"] == high_priotiy)
         weight = sum(box["weight"] for box in boxes if box["priority"] == high_priotiy)
@@ -241,7 +225,7 @@ def pack_trucks_from_csv(csv_file_path):
 # pack_trucks_from_csv(csv_file_path= "../uploads/test3.csv")
 # pack_trucks_from_csv(csv_file_path= "../uploads/test4.csv")
 start = time.time()
-# pack_trucks_from_csv(csv_file_path="../uploads/group.csv")
+# pack_trucks_from_csv(csv_file_path="../uploads/test5.csv")
 print(time.time() - start)
 
 # pack_trucks_from_csv(csv_file_path= "../uploads/test6.csv")

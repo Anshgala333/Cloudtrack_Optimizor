@@ -3,6 +3,7 @@ from collections import defaultdict
 import random
 import numpy as np
 import time
+from numba import njit
 
 # Box and Truck Definitions
 # dimension in meter
@@ -78,7 +79,7 @@ def create_truck_fleet():
             )
     return fleet
 
-
+# @njit
 def can_place(new_box, pos, placed_boxes, epsilon=0.001):
     nx, ny, nz = pos["x"], pos["y"], pos["z"]
     nw, nl, nh = new_box["width"], new_box["length"], new_box["height"]
@@ -250,6 +251,7 @@ def generate_final_output(truck_fleet, unplaced_boxes):
     message["not_placed"] = dict(message["not_placed"])
     message["total_trucks_used"] = len(message["trucks"])
     return {"message": message}
+
 
 def compute_stats_numpy(boxes):
     if not boxes:
