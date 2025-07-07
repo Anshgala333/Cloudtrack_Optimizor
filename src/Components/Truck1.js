@@ -19,11 +19,38 @@ var different = {
 
 // Priority-color map
 const PRIORITY_COLORS = {
-  1: "#FFA500", // Orange
-  2: "#87CEEB", // Sky Blue
-  3: "#34D399", // Green
-  4: "#f472b6", // Pink
+  1: "#FFA500",   // Orange
+  2: "#87CEEB",   // Sky Blue
+  3: "#34D399",   // Green
+  4: "#f472b6",   // Pink
+  5: "#A78BFA",   // Purple
+  6: "#FBBF24",   // Amber
+  7: "#60A5FA",   // Blue
+  8: "#F87171",   // Red
+  9: "#4ADE80",   // Light Green
+  10: "#C084FC",  // Lavender
+  11: "#FACC15",  // Yellow
+  12: "#2DD4BF",  // Teal
+  13: "#FB923C",  // Deep Orange
+  14: "#38BDF8",  // Light Blue
+  15: "#E879F9",  // Magenta
+  16: "#A3E635",  // Lime
+  17: "#F43F5E",  // Rose
+  18: "#06B6D4",  // Cyan
+  19: "#F59E0B",  // Dark Yellow
+  20: "#3B82F6",  // Primary Blue
+  21: "#D946EF",  // Orchid
+  22: "#10B981",  // Emerald
+  23: "#F97316",  // Bright Orange
+  24: "#2563EB",  // Royal Blue
+  25: "#EC4899",  // Deep Pink
+  26: "#22C55E",  // Forest Green
+  27: "#EAB308",  // Golden
+  28: "#8B5CF6",  // Violet
+  29: "#EF4444",  // Bold Red
+  30: "#14B8A6",  // Aqua
 };
+
 
 function DetailedWheel({ position }) {
   return (
