@@ -14,20 +14,12 @@ BOX_VOLUME = BOX_LENGTH * BOX_WIDTH * BOX_HEIGHT
 # Truck definitions with count
 TRUCKS = [
     {
-        "name": "12-ft Truck",
-        "length": 3.66,
-        "width": 2.0,
-        "height": 2.0,
-        "max_weight": 3000,
-        "count": 7,
-    },
-    {
         "name": "24-ft Truck",
         "length": 7.32,
         "width": 2.44,
         "height": 2.6,
         "max_weight": 8000,
-        "count": 4,
+        "count": 25,
     },
     {
         "name": "32-ft Truck",
@@ -35,7 +27,7 @@ TRUCKS = [
         "width": 2.44,
         "height": 2.6,
         "max_weight": 10000,
-        "count": 4,
+        "count": 25,
     },
 ]
 
