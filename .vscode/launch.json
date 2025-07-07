@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/Users/ANSH/OneDrive/Desktop/FastApi CSV",
-      "program": "c:/Users/ANSH/OneDrive/Desktop/FastApi CSV/build/Debug/outDebug",
+      "cwd": "c:/Users/ANSH/OneDrive/Desktop/CloudTrack Optimizor/FastApi CSV",
+      "program": "c:/Users/ANSH/OneDrive/Desktop/CloudTrack Optimizor/FastApi CSV/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

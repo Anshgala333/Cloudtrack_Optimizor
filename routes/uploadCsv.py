@@ -1,6 +1,8 @@
 from fastapi import APIRouter,UploadFile,File
 from datetime import datetime
 from Algorithm.truckFilling import pack_trucks_from_csv
+from Algorithm.DifferentSize.differentsize import main as differentSize
+# from Algorithm.DifferentSize.differentSize1 import pack_boxes_and_generate_output  as differentSize1
 import time
 import os
 
@@ -32,10 +34,18 @@ def allUploadedFiel():
         print(files)
         return files
 
-@upload.get("/getDataForThisCSV/{filename}")
+@upload.get("/getDataForThisCSV/boxOfSameSize/{filename}")
 def getDataForThisCSV(filename:str):
     path = os.path.join(UPLOAD_DIR, filename)
     response = pack_trucks_from_csv(path)
     return {"message" : response}
+
+
+@upload.get("/getDataForThisCSV/boxOfDifferentSize/{filename}")
+def getDataForThisCSV1(filename:str):
+    
+    path = os.path.join(UPLOAD_DIR, filename)
+    response = differentSize(path)
+    return response
 
     
