@@ -9,7 +9,7 @@ app = FastAPI()
 # to reduce size of api response
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 origins = [
-    "http://localhost:3000",
+    "http://localhost:4001",
 ]
 
 

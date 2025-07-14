@@ -3,7 +3,7 @@ from collections import defaultdict
 import random
 import numpy as np
 import time
-from numba import njit
+# from numba import njit
 
 # Box and Truck Definitions
 # dimension in meter
