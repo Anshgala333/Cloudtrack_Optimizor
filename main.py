@@ -3,6 +3,7 @@ from routes.uploadCsv import upload
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 import uvicorn
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
@@ -11,6 +12,8 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 origins = [
     "http://localhost:4001",
 ]
+
+app.mount("/maps", StaticFiles(directory="maps"), name="maps")
 
 
 app.add_middleware(
