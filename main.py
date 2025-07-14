@@ -1,10 +1,8 @@
 from fastapi import FastAPI
-from routes.uploadCsv import upload 
+from routes.uploadCsv import upload
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-
-
-
+import uvicorn
 
 app = FastAPI()
 
@@ -26,7 +24,10 @@ app.add_middleware(
 
 @app.get("/")
 def greet():
-    return{"hello world"}
+    return {"hello world"}
 
 
 app.include_router(upload)
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", port=4000, reload=True)

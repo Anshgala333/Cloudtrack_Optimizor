@@ -3,6 +3,7 @@ import json
 from collections import defaultdict
 import time
 import math
+from Algorithm.Routing.map_with_capacity import main as GetTruckDataFromGoogleOr
 
 # Constants
 BOX_LENGTH = 0.46
@@ -15,8 +16,8 @@ BOX_VOLUME = BOX_LENGTH * BOX_WIDTH * BOX_HEIGHT
 TRUCKS = [
     {
         "name": "24-ft Truck",
-        "length": 7.32,
-        "width": 2.44,
+        "length": 7.18,
+        "width": 2.39,
         "height": 2.6,
         "max_weight": 8000,
         "count": 25,
@@ -64,6 +65,7 @@ def beautify_truck_data(truck_fleet):
 
         box_index = 0
         total_boxes = len(sorted_boxes)
+        print(total_boxes)
 
         y = 0.0
         while round(y + BOX_LENGTH, 2) <= round(max_y, 2):
@@ -199,9 +201,6 @@ def pack_trucks_from_csv(csv_file_path):
         count = sum(1 for box in boxes if box["priority"] == high_priotiy)
         weight = sum(box["weight"] for box in boxes if box["priority"] == high_priotiy)
 
-        print(
-            f"there are {count} boxes of highest priority {high_priotiy} with total weight {weight}"
-        )
 
         if count > 0 and i < len(truck_fleet) - 1:
             maxC = truck_fleet[i + 1]["maximum_capacity"]
@@ -220,20 +219,18 @@ def pack_trucks_from_csv(csv_file_path):
                 truck_fleet[i+1]["boxes"] += boxofHIghPrioty
 
     # for truck in truck_fleet:
+    rec1 = GetTruckDataFromGoogleOr()
 
-    structured_output = beautify_truck_data(truck_fleet)
+    structured_output = beautify_truck_data(rec1["message"])
     structured_output["not_placed"] = group_unplaced_by_customer(unplaced_boxes)
 
     # print(json.dumps(structured_output, indent=3))
+    # return structured_output
     return structured_output
 
 
-# pack_trucks_from_csv(csv_file_path= "../uploads/1750513113.5196495_main.csv")
-# pack_trucks_from_csv(csv_file_path= "../uploads/test2.csv")
-# pack_trucks_from_csv(csv_file_path= "../uploads/test3.csv")
-# pack_trucks_from_csv(csv_file_path= "../uploads/test4.csv")
+
 start = time.time()
 # pack_trucks_from_csv(csv_file_path="../uploads/group.csv")
-print(time.time() - start)
 
 # pack_trucks_from_csv(csv_file_path= "../uploads/test6.csv")

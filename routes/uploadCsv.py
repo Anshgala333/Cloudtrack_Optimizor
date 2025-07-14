@@ -21,8 +21,8 @@ async def uploadFile(file : UploadFile = File(...)):
         f.write(content)
         
 
-    response = pack_trucks_from_csv(path)
-    return {"message" : response}
+    # response = pack_trucks_from_csv(path)
+    return {"message" : "file uploaded successfully"}
     
 @upload.get('/')
 def greet():
