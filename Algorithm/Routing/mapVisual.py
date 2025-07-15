@@ -55,9 +55,9 @@ def get_osrm_route(start, end):
     url = f"http://router.project-osrm.org/route/v1/driving/{start[1]},{start[0]};{end[1]},{end[0]}?overview=full&geometries=geojson"
     try:
         res = requests.get(url)
-        print(res)
         if res.status_code == 200:
             coords = res.json()["routes"][0]["geometry"]["coordinates"]
+            # print(coords)
             return [
                 (lat, lng) for lng, lat in coords
             ]  # Convert (lng, lat) to (lat, lng)

@@ -166,7 +166,7 @@ def create_data_model():
 
 def generate_output(data, manager, routing, solution):
     final_output = {"message": []}
-    print(routing)
+    # print(routing)
 
     for vehicle_id in range(data["num_vehicles"]):
         index = routing.Start(vehicle_id)

@@ -10,7 +10,7 @@ app = FastAPI()
 # to reduce size of api response
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 origins = [
-    "http://localhost:4001",
+    "*",
 ]
 
 app.mount("/maps", StaticFiles(directory="maps"), name="maps")
