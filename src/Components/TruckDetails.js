@@ -27,12 +27,12 @@ export default function TruckDetails({ selectedTruck }) {
 
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
                     <span style={{ color: "#6b7280" }}>Max Weight:</span>
-                    <span>{selectedTruck.max_weight} kg</span>
+                    <span>13000 kg</span>
                 </div>
 
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
                     <span style={{ color: "#6b7280" }}>Used Weight:</span>
-                    <span>{selectedTruck.used_weight} kg</span>
+                    <span>{(+selectedTruck.used_weight) * 18} kg</span>
                 </div>
 
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>

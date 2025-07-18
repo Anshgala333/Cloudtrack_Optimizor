@@ -4,11 +4,15 @@ import { ToastContainer, toast } from "react-toastify";
 import { FiUploadCloud } from "react-icons/fi";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router";
+
 
 const CSVUploader = () => {
     const [file, setFile] = useState(null);
     const [isLoading, setisLoading] = useState(false);
+    const [PlanRoutes, setPlanRoutes] = useState(false);
     const fileInputRef = useRef();
+    const navigate = useNavigate()
 
     const onDrop = useCallback((acceptedFiles) => {
         const uploadedFile = acceptedFiles[0];
@@ -47,21 +51,26 @@ const CSVUploader = () => {
         setisLoading(true)
 
         try {
-            const res = await fetch(`${process.env.REACT_APP_API}/upload`, {
+            const res = await fetch(`${process.env.REACT_APP_API}/upload/upload-csv`, {
                 method: "POST",
                 body: formData,
             });
-            const msg = await res.text();
+            var msg = await res.json()
             toast.success("Uploaded successfully!");
+            setPlanRoutes(true)
             console.log("Server response:", msg);
         } catch (err) {
             toast.error("Upload failed.");
             console.error(err);
         }
-        finally{
+        finally {
             setisLoading(false)
         }
     };
+
+    const planRoute = () => {
+       navigate("/AllTrucks")
+    }
 
     return (
         <div className="vh-100 d-flex flex-column justify-content-center align-items-center bg-light">
@@ -118,6 +127,19 @@ const CSVUploader = () => {
                 )}
                 {!isLoading && "Upload file"}
             </button>
+            {PlanRoutes && <button
+                type="button"
+                onClick={planRoute}
+                className="btn btn-success mt-4 px-3 py-1 fs-5 shadow rounded-3"
+                disabled={!file}
+            >
+                {isLoading && (
+                    <div className="spinner-border" role="status">
+                        <span className="visually-hidden">Planning Routes...</span>
+                    </div>
+                )}
+                {!isLoading && "Plan Route"}
+            </button>}
         </div>
     );
 };

@@ -8,8 +8,8 @@ import AllTrucks from "./AllTrucks";
 
 const CustomRoute = (
     <BrowserRouter>
-        <Routes>
-            <Route path="/drag" element={<CSVUploader />} />
+        <Routes >
+            <Route path="/" element={<CSVUploader />} />
             <Route path="/truck" element={<Truck />} />
             <Route path="/AllTrucks" element={< AllTrucks />} />
         </Routes>

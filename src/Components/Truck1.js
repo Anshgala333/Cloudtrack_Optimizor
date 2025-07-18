@@ -49,6 +49,16 @@ const PRIORITY_COLORS = {
   28: "#8B5CF6",  // Violet
   29: "#EF4444",  // Bold Red
   30: "#14B8A6",  // Aqua
+  31: "#FFA500",   // Orange
+  32: "#87CEEB",   // Sky Blue
+  33: "#34D399",   // Green
+  34: "#f472b6",   // Pink
+  35: "#A78BFA",   // Purple
+  36: "#FBBF24",   // Amber
+  37: "#60A5FA",   // Blue
+  38: "#F87171",   // Red
+  39: "#4ADE80",   // Light Green
+  40: "#C084FC",
 };
 
 
@@ -144,7 +154,7 @@ export default function TruckView({ truck, showWeights }) {
 
         {/* Boxes */}
         {truck.boxes.map((box, idx) => {
-          if(ignorePriorites.has(box.priority))return null
+          if (ignorePriorites.has(box.priority)) return null
 
           return (
             <group
@@ -154,11 +164,11 @@ export default function TruckView({ truck, showWeights }) {
                 box.position.z + BOX_HEIGHT / 2,
                 box.position.y + BOX_LENGTH / 2,
               ]}
-              // position={[
-              //   box.position.x + different[box["box_type"]].width / 2,
-              //   box.position.z + different[box["box_type"]].height / 2,
-              //   box.position.y + different[box["box_type"]]["length"] / 2,
-              // ]}
+            // position={[
+            //   box.position.x + different[box["box_type"]].width / 2,
+            //   box.position.z + different[box["box_type"]].height / 2,
+            //   box.position.y + different[box["box_type"]]["length"] / 2,
+            // ]}
             >
               <mesh>
                 <boxGeometry args={[BOX_WIDTH, BOX_HEIGHT, BOX_LENGTH]} />
