@@ -6,7 +6,10 @@ import time
 import os
 from branca.element import MacroElement
 from jinja2 import Template
+from polyline import decode
+import json
 
+key = 'AIzaSyD_-DylnZGJXFA4AgWo6XK-qp7eBXqml-U'
 
 os.makedirs("MAPS", exist_ok=True)
 
@@ -51,19 +54,89 @@ location_names = [
 ]
 
 
+def get_google_route_full(route):
+    origin = f"{route[0][0]},{route[0][1]}"
+    destination = f"{route[-1][0]},{route[-1][1]}"
+    waypoints = "optimize:false|" + "|".join([f"{lat},{lon}" for lat, lon in route[1:-1]])
+    
+    url = (
+        f"https://maps.googleapis.com/maps/api/directions/json?"
+        f"origin={origin}&destination={destination}"
+        f"&waypoints={waypoints}"
+        f"&key={key}"
+    )
+    coordinates = []
+    res = requests.get(url)
+    if res.status_code == 200:
+        data = res.json()
+        with open("Googleroutes.json" , "w") as f:
+            json.dump(res.json(), f, indent=4)
+          
+        # legs = data["routes"][0]["legs"][0]["steps"]
+        legs = data["routes"][0]["legs"]
+        overview_polyline = data["routes"][0]["overview_polyline"]["points"]
+        total_distance  = sum(x["distance"]["value"] for x in legs)
+        total_distance = round(total_distance/1000 , 2)
+        print(total_distance  , "kms")
+        
+        # arr = [x["polyline"]["points"] for x in legs]
+        # total_distance = sum([x["distance"]["value"] for  x in legs])
+        # total_time = sum([x["duration"]["value"] for  x in legs])
+        # print(len(arr))
+        
+        # total_distance = round(total_distance/1000 , 2)
+        # print(total_distance  , "kms")
+
+        # for hash in arr :
+        #     decoded = decode(hash)
+        #     coordinates.extend(decoded)
+        decoded = decode(overview_polyline)
+        coordinates.extend(decoded)
+        print(len(coordinates))
+        
+        
+        return coordinates,total_distance
+    
+
 def get_osrm_route(start, end):
-    url = f"http://router.project-osrm.org/route/v1/driving/{start[1]},{start[0]};{end[1]},{end[0]}?overview=full&geometries=geojson"
-    try:
-        res = requests.get(url)
-        if res.status_code == 200:
-            coords = res.json()["routes"][0]["geometry"]["coordinates"]
-            # print(coords)
-            return [
-                (lat, lng) for lng, lat in coords
-            ]  # Convert (lng, lat) to (lat, lng)
-    except Exception as e:
-        print(f"❌ Failed OSRM route for {start} -> {end}: {e}")
-    return [start, end]  # fallback
+    
+    # print("calling ")
+    # url = f"http://router.project-osrm.org/route/v1/driving/{start[1]},{start[0]};{end[1]},{end[0]}?overview=full&geometries=geojson"
+    # try:
+    #     res = requests.get(url)
+    #     print(res)
+    #     if res.status_code == 200:
+    #         coords = res.json()["routes"][0]["geometry"]["coordinates"]
+    #         # print(coords)
+    #         return [
+    #             (lat, lng) for lng, lat in coords
+    #         ]  # Convert (lng, lat) to (lat, lng)
+    # except Exception as e:
+    #     print(f"❌ Failed OSRM route for {start} -> {end}: {e}")
+    # return [start, end]  # fallback
+    
+    url = f'https://maps.googleapis.com/maps/api/directions/json?origin={start[0]},{start[1]}&destination={end[0]},{end[1]}&key={key}'
+    coordinates = []
+    res = requests.get(url)
+    if res.status_code == 200:
+        data = res.json()
+          
+        legs = data["routes"][0]["legs"][0]["steps"]
+        
+        arr = [x["polyline"]["points"] for x in legs]
+        total_distance = sum([x["distance"]["value"] for  x in legs])
+        total_time = sum([x["duration"]["value"] for  x in legs])
+        print(len(arr))
+        
+        total_distance = round(total_distance/1000 , 2)
+        print(total_distance  , "kms")
+
+        for hash in arr :
+            decoded = decode(hash)
+            coordinates.extend(decoded)
+        print(len(coordinates))
+        return coordinates
+            
 
 
 def create_info_box(route_data):
@@ -96,6 +169,7 @@ def create_info_box(route_data):
 
 
 def draw_routes_on_map(data, manager, routing, solution, coordinates, htmlFileName):
+    
     depot_coord = coordinates[data["depot"]]
     m = folium.Map(location=depot_coord, zoom_start=6)
 
@@ -146,12 +220,8 @@ def draw_routes_on_map(data, manager, routing, solution, coordinates, htmlFileNa
         fg = folium.FeatureGroup(
             name=f"Vehicle {vehicle_id}"
         )  # temporary name, update later
+        
         color = COLORS[vehicle_id % len(COLORS)]
-
-        index = routing.Start(vehicle_id)
-        stop_num = 1
-        route = []
-
         while not routing.IsEnd(index):
             node_index = manager.IndexToNode(index)
             coord = coordinates[node_index]
@@ -191,14 +261,26 @@ def draw_routes_on_map(data, manager, routing, solution, coordinates, htmlFileNa
         ).add_to(fg)
 
         # Draw real road polyline
-        for i in range(len(route) - 1):
-            path = get_osrm_route(route[i], route[i + 1])
-            seg_dist = geodesic(route[i], route[i + 1]).km
-            total_dist += seg_dist
+        # for i in range(len(route) - 1):
+        #     path = get_osrm_route(route[i], route[i + 1])
+        #     seg_dist = geodesic(route[i], route[i + 1]).km
+        #     total_dist += seg_dist
 
-            folium.PolyLine(
-                path, color=color, weight=4, opacity=0.9, tooltip=f"{seg_dist:.1f} km"
-            ).add_to(fg)
+        #     folium.PolyLine(
+        #         path, color=color, weight=4, opacity=0.9, tooltip=f"{seg_dist:.1f} km"
+        #     ).add_to(fg)
+        
+        for i in range(len(route) - 1):
+            total_dist += geodesic(route[i], route[i + 1]).km
+        
+        full_path,total_distance = get_google_route_full(route)
+        folium.PolyLine(
+            full_path,
+            color=color,
+            weight=4,
+            opacity=0.9,
+            tooltip=f"{total_distance:.1f} km"
+        ).add_to(fg)
 
         # Save this route's data
         route_data.append(
@@ -208,7 +290,7 @@ def draw_routes_on_map(data, manager, routing, solution, coordinates, htmlFileNa
         # ✅ Update FeatureGroup name with route summary
         stops_count = len(route) - 2  # excluding start and end depot
         fg.layer_name = (
-            f"Vehicle {vehicle_id} ({stops_count} stops, {total_dist:.1f} km)"
+            f"Vehicle {vehicle_id} ({stops_count} stops, {total_distance:.1f} km)"
         )
         fg.add_to(m)
 

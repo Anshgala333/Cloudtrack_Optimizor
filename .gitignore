@@ -11,3 +11,9 @@ env/
 *.txt
 
 threads.py
+.env
+
+trial
+
+self
+*.json

@@ -1,0 +1,5 @@
+2025-07-21 23:20:25,907 [INFO] logger.py:36 System initialized
+2025-07-21 23:20:25,908 [WARNING] logger.py:38 Heads up!
+2025-07-21 23:20:25,908 [ERROR] logger.py:39 Major failure occurred
+2025-07-21 23:20:26,117 [INFO] optimizer.py:25 validated data
+2025-07-21 23:20:26,123 [INFO] optimizer.py:29 cleaned data

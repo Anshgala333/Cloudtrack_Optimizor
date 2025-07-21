@@ -1,0 +1,15 @@
+2025-07-21 22:54:37,403 [INFO] This is an info message
+2025-07-21 22:54:37,403 [WARNING] This is a warning
+2025-07-21 22:54:37,403 [ERROR] Something went wrong!
+2025-07-21 22:54:37,428 [INFO] This is an info message
+2025-07-21 22:54:37,428 [WARNING] This is a warning
+2025-07-21 22:54:37,428 [ERROR] Something went wrong!
+2025-07-21 22:54:41,860 [INFO] This is an info message
+2025-07-21 22:54:41,860 [WARNING] This is a warning
+2025-07-21 22:54:41,860 [ERROR] Something went wrong!
+2025-07-21 22:54:43,884 [INFO] This is an info message
+2025-07-21 22:54:43,885 [WARNING] This is a warning
+2025-07-21 22:54:43,885 [ERROR] Something went wrong!
+2025-07-21 22:54:43,929 [INFO] This is an info message
+2025-07-21 22:54:43,929 [WARNING] This is a warning
+2025-07-21 22:54:43,930 [ERROR] Something went wrong!

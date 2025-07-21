@@ -3,7 +3,12 @@ import json
 from collections import defaultdict
 import time
 import math
-from Algorithm.Routing.map_with_capacity import main as GetTruckDataFromGoogleOr
+import sys
+import os
+import asyncio
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
+
+from algorithm.Routing.map_with_capacity import main as GetTruckDataFromGoogleOr
 
 # Constants
 BOX_LENGTH = 0.46
@@ -20,7 +25,7 @@ TRUCKS = [
         "width": 2.39,
         "height": 2.6,
         "max_weight": 8000,
-        "count": 25,
+        "count": 1,
     },
     {
         "name": "32-ft Truck",
@@ -28,7 +33,7 @@ TRUCKS = [
         "width": 2.44,
         "height": 2.6,
         "max_weight": 10000,
-        "count": 25,
+        "count": 0,
     },
 ]
 
@@ -65,8 +70,23 @@ def beautify_truck_data(truck_fleet):
 
         box_index = 0
         total_boxes = len(sorted_boxes)
-        print(total_boxes)
-
+        
+        # height adjustment
+        box_per_floor = math.floor(truck["length"] / BOX_LENGTH) * math.floor(truck["width"] / BOX_WIDTH)   
+        total_floors = truck["height"] // BOX_HEIGHT
+        height_of_one_floor = truck["height"] / total_floors
+        total_required_floor = math.ceil(total_boxes / box_per_floor)
+        final_height = total_required_floor * height_of_one_floor
+        
+        
+        print(box_per_floor , "box per floor")
+        print(total_floors , "height of one ")
+        print(height_of_one_floor , "height_of_one_floor ")
+        print(total_required_floor , "total_required_floor")
+        print(final_height , "total_required_floor")
+        
+        max_z = final_height
+        
         y = 0.0
         while round(y + BOX_LENGTH, 2) <= round(max_y, 2):
             z = 0.0
@@ -109,6 +129,8 @@ def beautify_truck_data(truck_fleet):
             "volume": f"{round(truck['volume'], 2)} cubic meter",
             "total_boxes": len(positioned_boxes),
             "boxes": positioned_boxes,
+            "maximum_capacity":truck["maximum_capacity"]
+            
         }
 
         beautified["trucks"].append(truck_info)
@@ -192,45 +214,49 @@ def pack_trucks_from_csv(csv_file_path):
         if not placed:
             # print(f"❌ Cannot assign box {box['customer_name']} - Box {box['box_number']} ({box['weight']}kg). All trucks full.")
             unplaced_boxes.append(box)
+    
+    # for i in range(len(truck_fleet)):
+    print(len(truck_fleet))
+    print(len(truck_fleet))
+    #     t = truck_fleet[i]
+    #     boxes = t.get("boxes")
+    #     if(len(boxes) == 0):continue
+    #     high_priotiy = max(box["priority"] for box in boxes)
+    #     count = sum(1 for box in boxes if box["priority"] == high_priotiy)
+    #     weight = sum(box["weight"] for box in boxes if box["priority"] == high_priotiy)
 
-    for i in range(len(truck_fleet)):
-        t = truck_fleet[i]
-        boxes = t.get("boxes")
-        if(len(boxes) == 0):continue
-        high_priotiy = max(box["priority"] for box in boxes)
-        count = sum(1 for box in boxes if box["priority"] == high_priotiy)
-        weight = sum(box["weight"] for box in boxes if box["priority"] == high_priotiy)
 
+    #     if count > 0 and i < len(truck_fleet) - 1:
+    #         maxC = truck_fleet[i + 1]["maximum_capacity"]
+    #         availableC = len(truck_fleet[i + 1].get("boxes"))
+    #         weightOccupied = truck_fleet[i + 1]["weight"]
+    #         weightAvailable = truck_fleet[i + 1]["max_weight"]
 
-        if count > 0 and i < len(truck_fleet) - 1:
-            maxC = truck_fleet[i + 1]["maximum_capacity"]
-            availableC = len(truck_fleet[i + 1].get("boxes"))
-            weightOccupied = truck_fleet[i + 1]["weight"]
-            weightAvailable = truck_fleet[i + 1]["max_weight"]
-
-            if (
-                maxC - availableC >= count #box capacity
-                and weightAvailable - weightOccupied >= weight #weight capacity
-            ):
-                safeBox = list(filter(lambda box: box["priority"] != high_priotiy, boxes))
-                boxofHIghPrioty = list(filter(lambda box: box["priority"] == high_priotiy, boxes))
+    #         if (
+    #             maxC - availableC >= count #box capacity
+    #             and weightAvailable - weightOccupied >= weight #weight capacity
+    #         ):
+    #             safeBox = list(filter(lambda box: box["priority"] != high_priotiy, boxes))
+    #             boxofHIghPrioty = list(filter(lambda box: box["priority"] == high_priotiy, boxes))
                 
-                t["boxes"] = safeBox[:]
-                truck_fleet[i+1]["boxes"] += boxofHIghPrioty
+    #             t["boxes"] = safeBox[:]
+    #             truck_fleet[i+1]["boxes"] += boxofHIghPrioty
 
     # for truck in truck_fleet:
-    rec1 = GetTruckDataFromGoogleOr()
-
-    structured_output = beautify_truck_data(rec1["message"])
+    start = time.time()
+    # rec1 = GetTruckDataFromGoogleOr(start)
+    
+    
+    # structured_output = beautify_truck_data(rec1["message"])
+    structured_output = beautify_truck_data(truck_fleet)
     structured_output["not_placed"] = group_unplaced_by_customer(unplaced_boxes)
-
-    # print(json.dumps(structured_output, indent=3))
-    # return structured_output
+    
+    print(time.time() - start)
     return structured_output
 
 
 
 start = time.time()
-# pack_trucks_from_csv(csv_file_path="../uploads/group.csv")
+# pack_trucks_from_csv(csv_file_path="../uploads/v2_retail.csv")
+# print(time.time() - start)
 
-# pack_trucks_from_csv(csv_file_path= "../uploads/test6.csv")
