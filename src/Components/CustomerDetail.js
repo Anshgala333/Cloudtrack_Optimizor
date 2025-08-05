@@ -2,6 +2,7 @@ import React from 'react'
 
 export default function CustomerDetail({ truck, index }) {
     console.log(truck)
+    if(truck.length == 0)return
     const selectedTruck = truck[index]
 
     function extractCustomerInfo(truck) {

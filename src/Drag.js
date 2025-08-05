@@ -16,7 +16,7 @@ const CSVUploader = () => {
 
     const onDrop = useCallback((acceptedFiles) => {
         const uploadedFile = acceptedFiles[0];
-        if (!uploadedFile || !uploadedFile.name.endsWith(".csv")) {
+        if (!uploadedFile) {
             toast.error("Please upload a valid .csv file");
             return;
         }
@@ -28,8 +28,8 @@ const CSVUploader = () => {
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
         accept: {
-            "text/csv": [".csv"],
-            "application/vnd.ms-excel": [".csv"],
+            "text/csv": [".csv" , ".xls"],
+            "application/vnd.ms-excel": [".csv" , ".xlsx"],
         },
         noClick: true,
         noKeyboard: true,
@@ -47,7 +47,7 @@ const CSVUploader = () => {
         console.log(file)
 
         const formData = new FormData();
-        formData.append("csv", file);
+        formData.append("file", file);
         setisLoading(true)
 
         try {
@@ -58,7 +58,8 @@ const CSVUploader = () => {
             var msg = await res.json()
             toast.success("Uploaded successfully!");
             setPlanRoutes(true)
-            console.log("Server response:", msg);
+            navigate("/AllTrucks" , {state : msg})
+
         } catch (err) {
             toast.error("Upload failed.");
             console.error(err);

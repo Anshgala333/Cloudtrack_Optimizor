@@ -5,38 +5,48 @@ import TruckView from './Components/Truck1';
 import TruckDetails from './Components/TruckDetails';
 import CustomerDetail from './Components/CustomerDetail';
 import Unplaced from './Components/Unplaced';
-import { Navigate, useNavigate } from 'react-router';
+import { Navigate, useLocation, useNavigate } from 'react-router';
+import { Model } from './Truck3d';
 
 
 export default function AllTrucks() {
     const fileName = "v2_retail.csv";
     const fileName1 = "differentShape.csv";
+    // console.log(params)
+    const location = useLocation()
+    // console.log(location)
+    // console.log(location.state)
 
     const [truck, setTruck] = useState([]);
     const [index, setIndex] = useState(0);
     const [customerSummary, setCustomerSummary] = useState([]);
     const [unplacedOrders, setUnplacedOrders] = useState([]);
 
-    const selectedTruck = truck[index];
     const [showWeights, setShowWeights] = useState(false);
     const [TruckDisplay, setTruckDisplay] = useState(false);
     const [loading, setloading] = useState(false);
+    const [selectedTruck, setSelectedTruck] = useState([]);
 
     const navigate = useNavigate()
 
 
 
+
     useEffect(() => {
         async function getData() {
+
             try {
+                const data = location.state
+                setSelectedTruck(data.data.trucks[index])
                 setloading(true)
-                const response = await fetch(`${process.env.REACT_APP_API}/upload/getDataForThisCSV/boxOfSameSize/${fileName}`);
+
+                // const response = await fetch(`${process.env.REACT_APP_API}/upload/getDataForThisCSV/boxOfSameSize/${fileName}`);
                 // const response = await fetch(`${process.env.REACT_APP_API}/upload/getDataForThisCSV/boxOfDifferentSize/${fileName1}`);
-                const data = await response.json();
-                setTruck(data.message.trucks);
-                setUnplacedOrders(data.message.not_placed);
-                setCustomerSummary(data.message.customer_summary);
-                // console.log(data.message)
+                // const data = await response.json();
+                setTruck(data.data.trucks);
+                // setUnplacedOrders(data.data.not_placed);
+                // setCustomerSummary(data.data.customer_summary);
+                // console.log(data.data)
             } catch (e) {
                 console.error("Error fetching truck data", e);
             }
@@ -47,9 +57,6 @@ export default function AllTrucks() {
         getData();
     }, []);
 
-    // function showhtml() {
-    //     navigate(`${process.env.REACT_APP_MAP_URL}`)
-    // }
 
 
     var LoadingContent = () => {
@@ -78,7 +85,11 @@ export default function AllTrucks() {
                     <div style={{ position: "absolute", top: 10, left: 10, zIndex: 10 }}>
                         <select
                             value={index}
-                            onChange={(e) => setIndex(parseInt(e.target.value))}
+                            onChange={(e) => {
+                                var index = parseInt(e.target.value)
+                                setIndex(index)
+                                setSelectedTruck(truck[index])
+                            }}
                             className='select-btn'
                         >
                             {truck.map((t, i) => (
@@ -92,7 +103,7 @@ export default function AllTrucks() {
 
                 {selectedTruck && <div style={{
                     position: "absolute",
-                    left: "12%",
+                    left: "20%",
                     top: 10,
                     zIndex: 10
                 }}>
@@ -115,9 +126,9 @@ export default function AllTrucks() {
                         className='primary-button'
                     >
                         <a
-                            href="http://164.52.193.188:4000/maps/routes.html"
+                            href="http://127.0.0.1:5500/map.html"
                             target="_blank"
-                            style={{color : "black"}}
+                            style={{ color: "black" }}
                             rel="noopener noreferrer"
                         >
                             📍Navigate Routes
@@ -129,7 +140,7 @@ export default function AllTrucks() {
 
                 {selectedTruck && <div style={{
                     position: "absolute",
-                    left: "23%",
+                    left: "30%",
                     top: 10,
                     zIndex: 10,
                 }}>
@@ -163,12 +174,22 @@ export default function AllTrucks() {
                 )}
 
 
-                {/* 3D Canvas */}
+                {/* 3D Canvas
                 {selectedTruck && (
                     <Canvas camera={{ position: [6, 6, 6], fov: 45 }} shadows>
                         <ambientLight intensity={0.9} />
                         <directionalLight position={[10, 20, 10]} intensity={1} castShadow />
                         <TruckView truck={selectedTruck} showWeights={showWeights} />
+                        <OrbitControls enableZoom={true} />
+                    </Canvas>
+                )} */}
+
+                {selectedTruck && (
+                    <Canvas style={{ height: "100vh", backgroundColor: "#eaeaea" }} camera={{ position: [6, 6, 6], fov: 45 }} shadows>
+                        <ambientLight intensity={0.8} />
+                        <directionalLight position={[10, 20, 10]} intensity={1} castShadow />
+                        <Model truck={selectedTruck} scale={1} />
+                        {/* <TruckView truck={selectedTruck} /> */}
                         <OrbitControls enableZoom={true} />
                     </Canvas>
                 )}

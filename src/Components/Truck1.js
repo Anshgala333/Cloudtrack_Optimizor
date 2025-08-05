@@ -7,6 +7,7 @@ import { Html } from "@react-three/drei"; // For floating legend panel
 
 // Box dimensions
 const BOX_LENGTH = 0.46;
+// const BOX_WIDTH = 0.46;
 const BOX_WIDTH = 0.46;
 const BOX_HEIGHT = 0.41;
 
@@ -101,19 +102,13 @@ export default function TruckView({ truck, showWeights }) {
     }));
   }, [truck.boxes]);
 
-  const truckData = [
-    { name: "12-ft Truck", length: 3.66, width: 2.0, height: 2.0, max_weight: 3000 },
-    { name: "24-ft Truck", length: 7.32, width: 2.44, height: 2.6, max_weight: 8000 },
-    { name: "32-ft Truck", length: 9.75, width: 2.44, height: 2.6, max_weight: 10000 },
-  ];
-  const selectedTruck = truckData.find((t) => t.name === truck.name);
-  const TRUCK_LENGTH = selectedTruck.length;
-  const TRUCK_WIDTH = selectedTruck.width;
-  const TRUCK_HEIGHT = selectedTruck.height;
+
+  const TRUCK_LENGTH = truck.length;
+  const TRUCK_WIDTH = truck.width;
+  const TRUCK_HEIGHT = truck.height;
 
   // Group boxes by customer with color for each priority
   var id = truck.boxes.map((e) => e.custom_id)
-  console.log(id)
 
 
   return (
@@ -183,6 +178,7 @@ export default function TruckView({ truck, showWeights }) {
             </group>
           )
         })}
+          <axesHelper args={[2]} />
 
         {/* Front Cab */}
         <group position={[TRUCK_WIDTH / 2, TRUCK_HEIGHT / 4, -0.5]}>
